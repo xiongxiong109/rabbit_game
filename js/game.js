@@ -57,13 +57,14 @@ function bootStrap(){
 	startBtn.visible=false;//按钮初始隐藏
 	startPage.addChild(startBtn);
 
+	stage.addChild(startPage);
+	
 	//动画交互
 	//背景
 	createjs.Tween.get(bgRect)
 	.to({
 		alpha:1
 	},400);
-	stage.addChild(startPage);
 	//地球
 	earth.scaleX=0;
 	earth.scaleY=0;
