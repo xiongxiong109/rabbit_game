@@ -24,14 +24,16 @@ var rabbitData={
 	frames:{width:298,height:312},
 	animations:{
 		stand:1,
-		eat:[0,1,'stand']
+		eat:[0,1,'stand'],
+		loop:[0,1]
 	}
 }
 var rabbitSheet=new createjs.SpriteSheet(rabbitData);
 
-bootStrap();
+// bootStrap();
 //游戏启动界面
 function bootStrap(){
+	createjs.Ticker.setFPS(30);
 	startPage=new createjs.Container();
 	rankPage=new createjs.Container();
 	overPage=new createjs.Container();
@@ -352,7 +354,7 @@ function gameStart(){
 	*@total:同时存在的最大item数
 	*/
 	function renderItem(){
-		var rand=0.5;
+		var rand=0.2;
 		var total=5;
 		var random=Math.random();
 		if(itemWrap.children.length<total){
@@ -372,7 +374,7 @@ function gameStart(){
 			item.realW=item.w*item.scaleX;
 			item.realH=item.h*item.scaleY;
 			item.x=Math.random()*(canvas.width-item.realW*2)+item.realW;
-			item.y=-item.h*item.scaleY-Math.random()*180-180;
+			item.y=-item.h*item.scaleY-Math.random()*250-180;
 			itemWrap.addChild(item);
 		}
 		for(var i=0;i<itemWrap.children.length;i++){
