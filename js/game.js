@@ -6,6 +6,11 @@ createjs.Touch.enable(stage);
 
 createjs.Ticker.setFPS(30);
 createjs.Ticker.addEventListener('tick',stage);
+
+//积分和生命
+var score=0;
+var life=5;
+
 //游戏界面
 var startPage=new createjs.Container();
 var rankPage=new createjs.Container();
@@ -24,9 +29,16 @@ var rabbitData={
 }
 var rabbitSheet=new createjs.SpriteSheet(rabbitData);
 
-// bootStrap();
+bootStrap();
 //游戏启动界面
 function bootStrap(){
+	startPage=new createjs.Container();
+	rankPage=new createjs.Container();
+	overPage=new createjs.Container();
+	rulePage=new createjs.Container();
+	mainPage=new createjs.Container();
+	score=0;
+	life=5;
 	//创建渐变色
 	var bg=new createjs.Graphics.Fill();
 	bg.linearGradient(['#010617','#040133'],[0,0.5],0,0,0,canvas.height);//这个只是创建了一个线性渐变的填充
@@ -36,7 +48,7 @@ function bootStrap(){
 	bgRect.alpha=0;
 
 	//随机创建n个一闪一闪亮晶晶的小星星
-	createStars(30);
+	createStars(40);
 
 	//创建地球
 	var earth=new createjs.Bitmap('img/start/earth.png');
@@ -94,7 +106,6 @@ function bootStrap(){
 	startPage.addChild(rnkBtn);
 
 	stage.addChild(startPage);
-	
 	//动画交互
 	//背景
 	createjs.Tween.get(bgRect)
@@ -142,7 +153,31 @@ function bootStrap(){
 	.call(function(){
 		
 		//点击按钮开始游戏
-		startBtn.addEventListener('click',gameStart);
+		startBtn.addEventListener('click',function(){
+			startBtn.visible=false;
+			ruleBtn.visible=false;
+			rnkBtn.visible=false;
+
+			createjs.Tween.get(earth)
+			.to({
+				y:-canvas.height
+			},400,createjs.Ease.backIn);
+
+			createjs.Tween.get(moon)
+			.wait(200)
+			.to({
+				y:canvas.height
+			},400,createjs.Ease.backIn)
+			.call(function(){
+				createjs.Tween.get(startPage)
+				.to({
+					alpha:0
+				},400)
+				.call(function(){
+					gameStart();
+				});
+			});
+		});
 	});
 
 	createjs.Tween.get(ruleBtn)
@@ -164,11 +199,6 @@ function bootStrap(){
 		rnkBtn.addEventListener('click',showRanks);
 	});
 }
-
-
-//积分和生命
-var score=0;
-var life=5;
 
 // gameStart();
 //游戏开始
@@ -221,6 +251,19 @@ function gameStart(){
 	mainPage.addChild(scoreText);
 	mainPage.addChild(lifeText);
 
+	//进场动画
+	mainPage.alpha=0;
+	luobo.y=-canvas.height;
+	createjs.Tween.get(mainPage)
+	.to({
+		alpha:1
+	},400)
+	.call(function(){
+		createjs.Tween.get(luobo)
+		.to({
+			y:canvas.height*0.02
+		},600,createjs.Ease.elasticOut)
+	});
 	//游戏说明
 	var master=new createjs.Container();
 	var mask=new createjs.Shape();
@@ -309,7 +352,7 @@ function gameStart(){
 	*@total:同时存在的最大item数
 	*/
 	function renderItem(){
-		var rand=0.2;
+		var rand=0.5;
 		var total=5;
 		var random=Math.random();
 		if(itemWrap.children.length<total){
@@ -328,7 +371,7 @@ function gameStart(){
 			item.scaleY=fixImgStyle(item.w,item.h,0.1,0.1).sy;
 			item.realW=item.w*item.scaleX;
 			item.realH=item.h*item.scaleY;
-			item.x=Math.random()*(canvas.width-item.realW)+item.regX*item.scaleX;
+			item.x=Math.random()*(canvas.width-item.realW*2)+item.realW;
 			item.y=-item.h*item.scaleY-Math.random()*180-180;
 			itemWrap.addChild(item);
 		}
@@ -356,6 +399,7 @@ function gameStart(){
 			life=0;
 			mainPage.removeChild(itemWrap);
 			createjs.Ticker.removeEventListener('tick',renderItem);
+			stage.removeChild(mainPage);
 			gameOver();
 		}
 		lifeText.text="生命:"+life;
@@ -523,7 +567,7 @@ function showRanks(){
 	});
 }
 
-gameOver();
+// gameOver();
 //游戏结束
 function gameOver(){
 
@@ -538,13 +582,13 @@ function gameOver(){
 	t1.scaleY=fixImgStyle(t1.w,t1.h,0.84,0.1).sy;
 	t1.x=canvas.width*0.08;
 	t1.y=canvas.height*0.12;
-	if(score<=200){
+	if(score<=50){
 		var t2=new createjs.Bitmap("img/over/text3.png");
 		t2.w=637;
 		t2.h=102;
 	}
 	else{
-		var t2=new createjs.Bitmap("img/over/text3.png");
+		var t2=new createjs.Bitmap("img/over/text2.png");
 		t2.w=611;
 		t2.h=105;
 	}
@@ -641,7 +685,14 @@ function gameOver(){
 			sarBtn.visible=true;
 		});
 	});
+
 	stage.addChild(overPage);
+	//动画交互
+	overPage.y=canvas.height;
+	createjs.Tween.get(overPage)
+	.to({
+		y:0
+	},400,createjs.Ease.backOut);
 }
 //创建星星函数
 function createStars(n){
