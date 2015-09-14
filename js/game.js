@@ -17,7 +17,6 @@ var rankPage=new createjs.Container();
 var overPage=new createjs.Container();
 var rulePage=new createjs.Container();
 var mainPage=new createjs.Container();
-
 //兔子雪碧图
 var rabbitData={
 	images:["img/main/rabbit_sprite.png"],
@@ -234,8 +233,8 @@ function gameStart(){
 	var rab=new createjs.Sprite(rabbitSheet,"stand");
 	rab.w=298;
 	rab.h=312;
-	rab.scaleX=fixImgStyle(rab.w,rab.h,0.4,0.42).sx;
-	rab.scaleY=fixImgStyle(rab.w,rab.h,0.4,0.42).sy;
+	rab.scaleX=fixImgStyle(rab.w,rab.h,0.3,0.32).sx;
+	rab.scaleY=fixImgStyle(rab.w,rab.h,0.3,0.32).sy;
 	rab.regX=rab.w/2;
 	rab.regY=rab.h/2;
 	rab.x=rab.regX*rab.scaleX;
@@ -384,6 +383,9 @@ function gameStart(){
 			if(box.y>=canvas.height){//掉落
 				itemWrap.removeChild(box);
 				life-=box.drop;
+				if(box.drop>0){
+					createjs.Sound.play('audio/peng.mp3',{startTime:0,duration:500});
+				}
 			}
 			if( 
 				box.y+box.realH>=rab.y && 
@@ -392,6 +394,13 @@ function gameStart(){
 				box.x<=rab.x+rab.realW
 				){//碰撞检测
 				rab.gotoAndPlay('eat');
+				if(box.damage>0){
+					//吃到炸弹
+					createjs.Sound.play('audio/peng.mp3',{startTime:0,duration:500});
+				}
+				else{//吃到月饼
+					createjs.Sound.play('audio/eat.mp3',{startTime:0,duration:500});
+				}
 				life-=box.damage;
 				score+=box.score;
 				itemWrap.removeChild(box);

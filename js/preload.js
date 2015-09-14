@@ -33,8 +33,60 @@ var manifest=[
 		src:'img/main/luobo.png'
 	},
 	{
-		id:'BGM',
-		src:'audio/music.mp3'
+		src:'img/main/bomb.png'
+	},
+	{
+		src:'img/main/cookie.png'
+	},
+	{
+		src:'img/main/rabbit_sprite.png'
+	},
+	{
+		src:'img/start/earth.png'
+	},
+	{
+		src:'img/start/moon.png'
+	},
+	{
+		src:'img/start/rank_btn.png'
+	},
+	{
+		src:'img/start/rule_btn.png'
+	},
+	{
+		src:'img/start/start_btn.png'
+	},
+	{
+		src:'img/rule/rule_content.png'
+	},
+	{
+		src:'img/rule/rule_title.png'
+	},
+	{
+		src:'img/over/again_btn.png',
+	},
+	{
+		src:'img/over/rank_btn.png'
+	},
+	{
+		src:'img/over/share_btn.png'
+	},
+	{
+		src:'img/over/text1.png'
+	},
+	{
+		src:'img/over/text2.png'
+	},
+	{
+		src:'img/over/text3.png'
+	},
+	{
+		id:'eat',
+		src:'audio/eat.mp3'
+	},
+	{
+		id:'peng',
+		src:'audio/peng.mp3'
 	}
 ];
 queue.loadManifest(manifest);
