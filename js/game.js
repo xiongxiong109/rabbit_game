@@ -32,8 +32,8 @@ function bootStrap(){
 	earth.scaleY=fixImgStyle(earth.w,earth.h,0.5,0.5).sy;
 	earth.regX=earth.w/2;
 	earth.regY=earth.h/2;
-	earth.x=canvas.width*0.25+earth.regX/2;
-	earth.y=canvas.height*0.02+earth.regY/2;
+	earth.x=canvas.width*0.25+earth.w*earth.scaleX/2;
+	earth.y=canvas.height*0.02+earth.h*earth.scaleY/2;
 	startPage.addChild(earth);
 
 	//创建兔子和月球
@@ -263,7 +263,7 @@ function showRanks(){
 			rank:3
 		},
 		{
-			name:"xiong",
+			name:"xiongxiong",
 			score:15,
 			rank:3
 		}
