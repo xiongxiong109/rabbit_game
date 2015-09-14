@@ -1,6 +1,8 @@
 var stage=new createjs.Stage('canvas');
 canvas.width=canvas.parentNode.offsetWidth;
 canvas.height=canvas.parentNode.offsetHeight;
+//开启触摸
+createjs.Touch.enable(stage);
 
 createjs.Ticker.setFPS(30);
 createjs.Ticker.addEventListener('tick',stage);
@@ -10,7 +12,19 @@ var rankPage=new createjs.Container();
 var overPage=new createjs.Container();
 var rulePage=new createjs.Container();
 var mainPage=new createjs.Container();
-bootStrap();
+
+//兔子雪碧图
+var rabbitData={
+	images:["img/main/rabbit_sprite.png"],
+	frames:{width:298,height:312},
+	animations:{
+		stand:1,
+		eat:[0,1,'stand']
+	}
+}
+var rabbitSheet=new createjs.SpriteSheet(rabbitData);
+
+// bootStrap();
 //游戏启动界面
 function bootStrap(){
 	//创建渐变色
@@ -151,9 +165,200 @@ function bootStrap(){
 	});
 }
 
+// gameStart();
 //游戏开始
 function gameStart(){
-	console.log('gameStart');
+	//背景
+	var bg=new createjs.Shape();
+	bg.graphics.beginFill("#315b98").drawRect(0,0,canvas.width,canvas.height);
+	mainPage.addChild(bg);
+
+	//萝卜
+	var luobo=new createjs.Bitmap("img/main/luobo.png");
+	luobo.w=676;
+	luobo.h=1476;
+	luobo.scaleX=fixImgStyle(luobo.w,luobo.h,0.76,1.7).sx;
+	luobo.scaleY=fixImgStyle(luobo.w,luobo.h,0.76,1.7).sy;
+	luobo.x=canvas.width*0.2;
+	luobo.y=canvas.height*0.02;
+	mainPage.addChild(luobo);
+
+	//地面
+	var ground=new createjs.Bitmap("img/main/ground.png");
+	ground.w=1649;
+	ground.h=918;
+	ground.scaleX=fixImgStyle(ground.w,ground.h,1.5,1.1).sx;
+	ground.scaleY=fixImgStyle(ground.w,ground.h,1.5,1.1).sy;
+	ground.x=-canvas.width*0.25;
+	ground.y=canvas.height*0.8;
+	mainPage.addChild(ground);
+
+	//兔子
+	var rab=new createjs.Sprite(rabbitSheet,"stand");
+	rab.w=298;
+	rab.h=312;
+	rab.scaleX=fixImgStyle(rab.w,rab.h,0.4,0.42).sx;
+	rab.scaleY=fixImgStyle(rab.w,rab.h,0.4,0.42).sy;
+	rab.regX=rab.w/2;
+	rab.regY=rab.h/2;
+	rab.x=rab.regX*rab.scaleX;
+	rab.y=canvas.height-rab.regY*rab.scaleY;
+	rab.realW=rab.w*rab.scaleX;
+	rab.realH=rab.h*rab.scaleY;
+	mainPage.addChild(rab);
+
+	//积分和生命
+	var score=0;
+	var life=5;
+	var scoreText=new createjs.Text("积分:"+score,"1.5rem Arial","#e3b773");
+	var lifeText=new createjs.Text("生命:"+life,"1.5rem Arial","#e3b773");
+	scoreText.x=canvas.width*0.02;
+	scoreText.y=canvas.height*0.01;
+	lifeText.x=canvas.width-lifeText.getMeasuredWidth()-canvas.width*0.02;
+	lifeText.y=canvas.height*0.01;
+	mainPage.addChild(scoreText);
+	mainPage.addChild(lifeText);
+
+	//游戏说明
+	var master=new createjs.Container();
+	var mask=new createjs.Shape();
+	mask.graphics.beginFill("#000").drawRect(0,0,canvas.width,canvas.height);
+	mask.alpha=0.5;
+	master.addChild(mask);
+	var str1="拖拽小兔在底部移动";
+	var str2="吃到的月饼越多,奖励越高哦!";
+	var tips1=new createjs.Text(str1,"1rem Arial","#fff");
+	var tips2=new createjs.Text(str2,"1rem Arial","#fff");
+	tips1.x=(canvas.width-tips1.getMeasuredWidth())/2;
+	tips1.y=canvas.height*0.4;
+	tips2.x=(canvas.width-tips2.getMeasuredWidth())/2;
+	tips2.y=canvas.height*0.5;
+	master.addChild(tips1);
+	master.addChild(tips2);
+	mainPage.addChild(master);
+
+	//掉落数据
+	var items=[//掉落物品的属性
+		{
+			name:"bomb",
+			src:"img/main/bomb.png",
+			score:0,//吃到以后得分
+			damage:1,//吃到以后的伤害
+			drop:0//掉落以后的伤害
+		},
+		{
+			name:"cookie",
+			src:"img/main/cookie.png",
+			score:5,
+			damage:0,
+			drop:1
+		}
+	];
+	var itemWrap=new createjs.Container();
+	//游戏开始事件
+	master.alpha=0;
+	createjs.Tween.get(master)
+	.to({
+		alpha:1
+	},500)
+	.wait(1500)
+	.to({
+		alpha:0
+	},500)
+	.call(function(){
+		//创建物体
+		mainPage.addChild(itemWrap);
+		createjs.Ticker.addEventListener('tick',renderItem);
+	});
+	//拖拽事件
+	var disX;
+	rab.on('mousedown',function(e){
+		disX=e.stageX-rab.x;
+		stage.on('pressmove',function(e){
+			var L=e.stageX+disX;
+			if(L<=rab.regX*rab.scaleX){
+				L=rab.regX*rab.scaleX;
+			}
+			else if(L>=canvas.width-rab.regX*rab.scaleX){
+				L=canvas.width-rab.regX*rab.scaleX;
+			}
+			rab.x=L;
+			//视差滚动
+			createjs.Tween.get(luobo)
+			.to({
+				x:canvas.width*0.2-L*0.05
+			},200);
+			createjs.Tween.get(ground)
+			.to({
+				x:L*0.08-canvas.width*0.25
+			});
+		});
+		stage.on('pressup',function(e){
+			stage.off('pressmove');
+			stage.off('pressup');
+		});
+	});
+
+	stage.addChild(mainPage);
+
+	/*
+	*随机渲染掉落物品
+	*@rand:表示掉落炸弹的概率0-1
+	*@total:同时存在的最大item数
+	*/
+	function renderItem(){
+		var rand=0.2;
+		var total=5;
+		var random=Math.random();
+		if(itemWrap.children.length<total){
+			var cnt=0;
+			var item;
+			cnt= random>rand ? 1 : 0; //1出月饼,0出炸弹
+			item=new createjs.Bitmap(items[cnt].src);
+			item.damage=items[cnt].damage;
+			item.score=items[cnt].score;
+			item.drop=items[cnt].drop;
+			item.w=74;
+			item.h=74;
+			item.regX=item.w/2;
+			item.regY=item.h/2;
+			item.scaleX=fixImgStyle(item.w,item.h,0.1,0.1).sx;
+			item.scaleY=fixImgStyle(item.w,item.h,0.1,0.1).sy;
+			item.realW=item.w*item.scaleX;
+			item.realH=item.h*item.scaleY;
+			item.x=Math.random()*(canvas.width-item.realW)+item.regX*item.scaleX;
+			item.y=-item.h*item.scaleY-Math.random()*180-180;
+			itemWrap.addChild(item);
+		}
+		for(var i=0;i<itemWrap.children.length;i++){
+			var box=itemWrap.getChildAt(i);
+			box.y+=8;
+			box.rotation+=10;
+			if(box.y>=canvas.height){//掉落
+				itemWrap.removeChild(box);
+				life-=box.drop;
+			}
+			if( 
+				box.y+box.realH>=rab.y && 
+				box.y<=rab.y+box.realH && 
+				box.x+box.realW>=rab.x &&
+				box.x<=rab.x+rab.realW
+				){//碰撞检测
+				rab.gotoAndPlay('eat');
+				life-=box.damage;
+				score+=box.score;
+				itemWrap.removeChild(box);
+			}
+		}
+		if(life<=0){
+			life=0;
+			mainPage.removeChild(itemWrap);
+			createjs.Ticker.removeEventListener('tick',renderItem);
+			gameOver();
+		}
+		lifeText.text="生命:"+life;
+		scoreText.text="积分:"+score;
+	}
 }
 
 // showRules();
@@ -311,6 +516,11 @@ function showRanks(){
 	});
 }
 
+gameOver();
+//游戏结束
+function gameOver(){
+	
+}
 //创建星星函数
 function createStars(n){
 	for(var i=0;i<n;i++){
