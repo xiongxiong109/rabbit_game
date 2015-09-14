@@ -10,7 +10,7 @@ var rankPage=new createjs.Container();
 var overPage=new createjs.Container();
 var rulePage=new createjs.Container();
 var mainPage=new createjs.Container();
-// bootStrap();
+bootStrap();
 //游戏启动界面
 function bootStrap(){
 	//创建渐变色
@@ -209,9 +209,106 @@ function showRules(){
 		});
 	})
 }
+
+// showRanks();
 //查看排名
 function showRanks(){
-	
+	var bg=new createjs.Shape();
+	bg.graphics.beginFill("#315b98").drawRect(0,0,canvas.width,canvas.height);
+	rankPage.addChild(bg);
+	//标题
+	var title=new createjs.Bitmap("img/rank/rank_title.png");
+	title.w=315;
+	title.h=37;
+	title.scaleX=fixImgStyle(title.w,title.h,0.38,0.05).sx;
+	title.scaleY=fixImgStyle(title.w,title.h,0.38,0.05).sy;
+	title.x=canvas.width*0.05;
+	title.y=canvas.height*0.02;
+	rankPage.addChild(title);
+	//抬头
+	var th=new createjs.Bitmap("img/rank/text.png");
+	th.w=638;
+	th.h=41;
+	th.scaleX=fixImgStyle(th.w,th.h,0.72,0.05).sx;
+	th.scaleY=fixImgStyle(th.w,th.h,0.72,0.05).sy;
+	th.x=canvas.width*0.14;
+	th.y=canvas.height*0.08;
+	rankPage.addChild(th);
+
+	//返回按钮
+	var backBtn=new createjs.Bitmap("img/back_btn.png");
+	backBtn.w=306;
+	backBtn.h=127;
+	backBtn.scaleX=fixImgStyle(backBtn.w,backBtn.h,0.34,0.14).sx;
+	backBtn.scaleY=fixImgStyle(backBtn.w,backBtn.h,0.34,0.14).sy;
+	backBtn.x=canvas.width*0.33;
+	backBtn.y=canvas.height*0.8;
+	rankPage.addChild(backBtn);
+
+	//添加数据
+	var data=[
+		{
+			name:"小小酱油熊小小酱油熊",
+			score:21,
+			rank:1
+		},
+		{
+			name:"熊熊109",
+			score:18,
+			rank:2
+		},
+		{
+			name:"xiong",
+			score:15,
+			rank:3
+		},
+		{
+			name:"xiong",
+			score:15,
+			rank:3
+		}
+	];
+	var len=data.length>10 ? 10 : data.length;
+	for(var i=0;i<len;i++){
+		var row=new createjs.Container();
+
+		var name=new createjs.Text(data[i].name,"1.2rem Arial","#f6c285");
+		name.x=canvas.width*0.22;
+		name.textAlign="center";
+		//过长的名字做截断处理
+		if(name.getMeasuredWidth()>=canvas.width*0.4){
+			name.text=data[i].name=data[i].name.substr(0,5)+"...";
+		}
+
+		var score=new createjs.Text(data[i].score,"1.2rem Arial","#f6c285");
+		score.x=canvas.width*0.5;
+
+		var rank=new createjs.Text(data[i].rank,"1.2rem Arial","#f6c285");
+		rank.x=canvas.width*0.8;
+
+		row.addChild(name); 
+		row.addChild(score); 
+		row.addChild(rank);
+		row.y=canvas.height*(0.15+i*0.06);
+		rankPage.addChild(row);
+	}
+	stage.addChild(rankPage);
+
+	//动画交互
+	rankPage.y=-canvas.height;
+	createjs.Tween.get(rankPage)
+	.to({
+		y:0
+	},800,createjs.Ease.bounceOut);
+	backBtn.on('click',function(){
+		createjs.Tween.get(rankPage)
+		.to({
+			y:-canvas.height
+		},400,createjs.Ease.backIn)
+		.call(function(){
+			stage.removeChild(rankPage);
+		});
+	});
 }
 
 //创建星星函数
