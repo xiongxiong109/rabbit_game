@@ -165,6 +165,11 @@ function bootStrap(){
 	});
 }
 
+
+//积分和生命
+var score=0;
+var life=5;
+
 // gameStart();
 //游戏开始
 function gameStart(){
@@ -207,9 +212,6 @@ function gameStart(){
 	rab.realH=rab.h*rab.scaleY;
 	mainPage.addChild(rab);
 
-	//积分和生命
-	var score=0;
-	var life=5;
 	var scoreText=new createjs.Text("积分:"+score,"1.5rem Arial","#e3b773");
 	var lifeText=new createjs.Text("生命:"+life,"1.5rem Arial","#e3b773");
 	scoreText.x=canvas.width*0.02;
@@ -477,19 +479,24 @@ function showRanks(){
 	for(var i=0;i<len;i++){
 		var row=new createjs.Container();
 
-		var name=new createjs.Text(data[i].name,"1.2rem Arial","#f6c285");
+		var name=new createjs.Text(data[i].name,"0.8rem Arial","#f6c285");
 		name.x=canvas.width*0.22;
 		name.textAlign="center";
+
+		var score=new createjs.Text(data[i].score,"0.8rem Arial","#f6c285");
+		score.x=canvas.width*0.5;
+
+		var rank=new createjs.Text(data[i].rank,"0.8rem Arial","#f6c285");
+		rank.x=canvas.width*0.8;
+		if(canvas.width>=768){
+			name.font="2rem Arial";
+			score.font="2rem Arial";
+			rank.font="2rem Arial";
+		}
 		//过长的名字做截断处理
 		if(name.getMeasuredWidth()>=canvas.width*0.4){
 			name.text=data[i].name=data[i].name.substr(0,5)+"...";
 		}
-
-		var score=new createjs.Text(data[i].score,"1.2rem Arial","#f6c285");
-		score.x=canvas.width*0.5;
-
-		var rank=new createjs.Text(data[i].rank,"1.2rem Arial","#f6c285");
-		rank.x=canvas.width*0.8;
 
 		row.addChild(name); 
 		row.addChild(score); 
@@ -519,7 +526,122 @@ function showRanks(){
 gameOver();
 //游戏结束
 function gameOver(){
-	
+
+	var bg=new createjs.Shape();
+	bg.graphics.beginFill("#315b98").drawRect(0,0,canvas.width,canvas.height);
+	overPage.addChild(bg);
+
+	var t1=new createjs.Bitmap("img/over/text1.png");
+	t1.w=755;
+	t1.h=87;
+	t1.scaleX=fixImgStyle(t1.w,t1.h,0.84,0.1).sx;
+	t1.scaleY=fixImgStyle(t1.w,t1.h,0.84,0.1).sy;
+	t1.x=canvas.width*0.08;
+	t1.y=canvas.height*0.12;
+	if(score<=200){
+		var t2=new createjs.Bitmap("img/over/text3.png");
+		t2.w=637;
+		t2.h=102;
+	}
+	else{
+		var t2=new createjs.Bitmap("img/over/text3.png");
+		t2.w=611;
+		t2.h=105;
+	}
+	t2.scaleX=fixImgStyle(t2.w,t2.h,0.7,0.1).sx;
+	t2.scaleY=fixImgStyle(t2.w,t2.h,0.7,0.1).sy;
+	t2.x=canvas.width*0.15;
+	t2.y=canvas.height*0.22;
+	overPage.addChild(t1);
+	overPage.addChild(t2);
+	var scoreNumber=new createjs.Text(score,"1.4rem Arial","#f6c285");
+	scoreNumber.textAlign="center";
+	if(canvas.width>=768){//调整字体大小
+		scoreNumber.font="3.4rem Arial";
+	}
+	scoreNumber.x=canvas.width*0.72;
+	scoreNumber.y=canvas.height*0.13;
+	overPage.addChild(scoreNumber);
+	var btn={};
+	btn.w=220;
+	btn.h=91;
+	btn.sx=fixImgStyle(btn.w,btn.h,0.34,0.13).sx;
+	btn.sy=fixImgStyle(btn.w,btn.h,0.34,0.13).sy;
+
+	var rankBtn=new createjs.Bitmap("img/over/rank_btn.png");
+	rankBtn.scaleX=btn.sx;
+	rankBtn.scaleY=btn.sy;
+	rankBtn.x=canvas.width*0.33;
+	rankBtn.y=canvas.height*0.48;
+	overPage.addChild(rankBtn);
+
+	var agnBtn=new createjs.Bitmap("img/over/again_btn.png");
+	agnBtn.scaleX=btn.sx;
+	agnBtn.scaleY=btn.sy;
+	agnBtn.x=canvas.width*0.33;
+	agnBtn.y=canvas.height*0.58;
+	overPage.addChild(agnBtn);
+
+	var sarBtn=new createjs.Bitmap("img/over/share_btn.png");
+	sarBtn.scaleX=btn.sx;
+	sarBtn.scaleY=btn.sy;
+	sarBtn.x=canvas.width*0.33;
+	sarBtn.y=canvas.height*0.68;
+	overPage.addChild(sarBtn);
+
+	//查看排名
+	rankBtn.on('click',function(){
+		showRanks();
+	});
+	//再战一次
+	agnBtn.on('click',function(){
+		createjs.Tween.get(overPage)
+		.to({
+			x:canvas.width
+		},600,createjs.Ease.bounceOut)
+		.call(function(){
+			stage.removeChild(overPage);
+			bootStrap();
+		});
+	});
+	//PK好友
+	sarBtn.on('click',function(){
+
+		rankBtn.visible=false;
+		agnBtn.visible=false;
+		sarBtn.visible=false;
+
+		var overLayer=new createjs.Container();
+		var bg=new createjs.Shape();
+		bg.graphics.beginFill("#000").drawRect(0,0,canvas.width,canvas.height);
+		bg.alpha=0.6;
+		overLayer.addChild(bg);
+
+		var shareText=new createjs.Bitmap("img/share_text.png");
+		shareText.w=480;
+		shareText.h=353;
+		shareText.scaleX=fixImgStyle(shareText.w,shareText.h,0.76,0.55).sx;
+		shareText.scaleY=fixImgStyle(shareText.w,shareText.h,0.76,0.55).sy;
+		shareText.x=canvas.width*0.12;
+		shareText.y=canvas.height*0.02;
+		overLayer.addChild(shareText);
+		overLayer.alpha=0;
+		overPage.addChild(overLayer);
+		createjs.Tween.get(overLayer)
+		.to({
+			alpha:1
+		},400)
+		.wait(1500)
+		.to({
+			alpha:0
+		},400)
+		.call(function(){
+			rankBtn.visible=true;
+			agnBtn.visible=true;
+			sarBtn.visible=true;
+		});
+	});
+	stage.addChild(overPage);
 }
 //创建星星函数
 function createStars(n){
