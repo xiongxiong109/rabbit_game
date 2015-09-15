@@ -1,4 +1,3 @@
-var queue=new createjs.LoadQueue();
 var loadPage=new createjs.Container();
 createjs.Ticker.setFPS(8);
 stage.addChild(loadPage);
@@ -20,6 +19,8 @@ loadPage.addChild(barOuter);
 var barInner=new createjs.Shape();
 loadPage.addChild(barInner);
 
+//进度条
+var queue=new createjs.LoadQueue(false);
 queue.on('complete',handleComplete,this);
 queue.on('progress',handleProgress,this);
 queue.installPlugin(createjs.Sound);
@@ -63,6 +64,12 @@ var manifest=[
 		src:'img/rule/rule_title.png'
 	},
 	{
+		src:'img/rank/rank_title.png'
+	},
+	{
+		src:'img/rank/text.png'
+	},
+	{
 		src:'img/over/again_btn.png',
 	},
 	{
@@ -87,6 +94,12 @@ var manifest=[
 	{
 		id:'peng',
 		src:'audio/peng.mp3'
+	},
+	{
+		src:'img/back_btn.png'
+	},
+	{
+		src:'img/share_text.png'
 	}
 ];
 queue.loadManifest(manifest);
@@ -104,7 +117,7 @@ function handleComplete(e){
 	function soundPlay(){
 		var BGM=createjs.Sound.play('BGM');
 		BGM.volume=0.6;
-		BGM.loop=1;
+		BGM.loop=-1;
 	}
 	createjs.Ticker.setFPS(30);
 	createjs.Tween.get(loadRabber)

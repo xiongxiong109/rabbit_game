@@ -220,7 +220,7 @@ function gameStart(){
 	mainPage.addChild(luobo);
 
 	//地面
-	var ground=new createjs.Bitmap("img/main/ground.png");
+	var ground=new createjs.Bitmap(queue.getResult('ground'));
 	ground.w=1649;
 	ground.h=918;
 	ground.scaleX=fixImgStyle(ground.w,ground.h,1.5,1.1).sx;
