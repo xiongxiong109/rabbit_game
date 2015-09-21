@@ -314,6 +314,7 @@ function gameStart(){
 	.call(function(){
 		//创建物体
 		mainPage.addChild(itemWrap);
+		mainPage.removeChild(master);
 		createjs.Ticker.addEventListener('tick',renderItem);
 	});
 	//拖拽事件
@@ -338,6 +339,20 @@ function gameStart(){
 			.to({
 				x:L*0.08-canvas.width*0.25
 			});
+
+			//提示语
+			if(score==50){
+				showTips('炸弹概率增加!');
+			}
+			if(score==100){
+				showTips('速度增加!');
+			}
+			if(score==120){
+				showTips("一大波炸弹来袭!");
+			}
+			if(score==180){
+				showTips("渡过炸弹危机!");
+			}
 		});
 		stage.on('pressup',function(e){
 			stage.off('pressmove');
@@ -348,14 +363,46 @@ function gameStart(){
 	stage.addChild(mainPage);
 
 	/*
+	*显示一句话
+	*/
+	function showTips(str){
+		var txt=new createjs.Text(str,"1rem Arial","#fff");
+		txt.y=canvas.height*0.05;
+		txt.x=(canvas.width-txt.getMeasuredWidth()) / 2;
+		txt.lineWidth=3;
+		txt.alpha=0;
+		mainPage.addChild(txt);
+
+		createjs.Tween.get(txt)
+		.to({
+			alpha:1
+		},400)
+		.wait(500)
+		.to({
+			alpha:0
+		},400)
+		.call(function(){
+			mainPage.removeChild(txt);
+		});
+	}
+	/*
 	*随机渲染掉落物品
 	*@rand:表示掉落炸弹的概率0-1
 	*@total:同时存在的最大item数
 	*/
 	function renderItem(){
 		var rand=0.2;
-		var total=5;
+		var total=8;
 		var random=Math.random();
+		if(score>=50){
+			rand=0.4;
+		}
+		if(score>=120 && score<=150){
+			rand=0.9;
+		}
+		if(score>150){
+			rand=0.4;
+		}
 		if(itemWrap.children.length<total){
 			var cnt=0;
 			var item;
@@ -373,12 +420,18 @@ function gameStart(){
 			item.realW=item.w*item.scaleX;
 			item.realH=item.h*item.scaleY;
 			item.x=Math.random()*(canvas.width-item.realW*2)+item.realW;
-			item.y=-item.h*item.scaleY-Math.random()*250-180;
+			item.id=item.id%total;
+			item.y=-item.h*item.scaleY-(item.id+1)*180;
 			itemWrap.addChild(item);
 		}
 		for(var i=0;i<itemWrap.children.length;i++){
 			var box=itemWrap.getChildAt(i);
-			box.y+=8;
+			if(score>=100){//速度增加
+				box.y+=14;
+			}
+			else{
+				box.y+=8;
+			}
 			box.rotation+=10;
 			if(box.y>=canvas.height){//掉落
 				itemWrap.removeChild(box);
@@ -391,7 +444,7 @@ function gameStart(){
 				box.y+box.realH>=rab.y && 
 				box.y<=rab.y+box.realH && 
 				box.x+box.realW>=rab.x &&
-				box.x<=rab.x+rab.realW
+				box.x<=rab.x+rab.realW/2
 				){//碰撞检测
 				rab.gotoAndPlay('eat');
 				if(box.damage>0){
@@ -474,7 +527,8 @@ function showRules(){
 
 // showRanks();
 //查看排名
-function showRanks(){
+function showRanks(json){
+	rankPage.removeAllChildren();
 	var bg=new createjs.Shape();
 	bg.graphics.beginFill("#315b98").drawRect(0,0,canvas.width,canvas.height);
 	rankPage.addChild(bg);
@@ -506,31 +560,43 @@ function showRanks(){
 	backBtn.x=canvas.width*0.33;
 	backBtn.y=canvas.height*0.8;
 	rankPage.addChild(backBtn);
+	//更新数据
+	if(json){//有数据传入,则添加用户更新排名
+		getRanks(json);
+	}
+	else{//没有数据传入,直接获取最新数据
+		getRanks();
+	}
+	stage.addChild(rankPage);
 
+	//动画交互
+	rankPage.y=-canvas.height;
+	createjs.Tween.get(rankPage)
+	.to({
+		y:0
+	},800,createjs.Ease.bounceOut);
+	backBtn.on('click',function(){
+		createjs.Tween.get(rankPage)
+		.to({
+			y:-canvas.height
+		},400,createjs.Ease.backIn)
+		.call(function(){
+			stage.removeChild(rankPage);
+		});
+	});
+}
+//更新排名
+function updateData(){
 	//添加数据
-	var data=[
-		{
-			name:"小小酱油熊小小酱油熊",
-			score:21,
-			rank:1
-		},
-		{
-			name:"熊熊109",
-			score:18,
-			rank:2
-		},
-		{
-			name:"xiong",
-			score:15,
-			rank:3
-		},
-		{
-			name:"xiongxiong",
-			score:15,
-			rank:3
-		}
-	];
 	var len=data.length>10 ? 10 : data.length;
+	if(len<=0){
+		var row=new createjs.Container();
+		var txt=new createjs.Text("暂无排名数据","0.8rem Arial","#f6c285");
+		txt.x=(canvas.width-txt.getMeasuredWidth())/2;
+		txt.y=canvas.height*0.5;
+		row.addChild(txt);
+		rankPage.addChild(row);
+	}
 	for(var i=0;i<len;i++){
 		var row=new createjs.Container();
 
@@ -559,25 +625,7 @@ function showRanks(){
 		row.y=canvas.height*(0.15+i*0.06);
 		rankPage.addChild(row);
 	}
-	stage.addChild(rankPage);
-
-	//动画交互
-	rankPage.y=-canvas.height;
-	createjs.Tween.get(rankPage)
-	.to({
-		y:0
-	},800,createjs.Ease.bounceOut);
-	backBtn.on('click',function(){
-		createjs.Tween.get(rankPage)
-		.to({
-			y:-canvas.height
-		},400,createjs.Ease.backIn)
-		.call(function(){
-			stage.removeChild(rankPage);
-		});
-	});
 }
-
 // gameOver();
 //游戏结束
 function gameOver(){
@@ -703,7 +751,13 @@ function gameOver(){
 	createjs.Tween.get(overPage)
 	.to({
 		y:0
-	},400,createjs.Ease.backOut);
+	},400,createjs.Ease.backOut)
+	.call(function(){
+		$(".form-wrap").show().css({
+			"transform-origin":"top center",
+			"-webkit-transform-origin":"top center"
+		}).addClass('rotateIn');
+	});
 }
 //创建星星函数
 function createStars(n){
